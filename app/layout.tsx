@@ -1,34 +1,31 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import React from "react";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"], // Add the weights your design uses
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Hamza Lazaar's Portfolio",
-  description: "",
+export const metadata = {
+  title: "Hamza Lazaar - Portfolio",
+  description: "Software Engineering Student Portfolio",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      {/* Change the className here from Geist's variable to poppins.className
+        OLD was probably: <body className={GeistSans.className}>
+      */}
+      <body className={poppins.className}>
         {children}
       </body>
     </html>
   );
 }
+
