@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // --- ICONS ---
 import {
+  LinkedinIcon as Linkedin,
   Github,
   Mail,
   Phone,
@@ -43,6 +44,7 @@ interface Project {
   description: string;
   technologies: string[];
   githubUrl: string;
+  otherUrl?: string;
 }
 
 interface SkillCategory {
@@ -58,6 +60,7 @@ const personalInfo = {
   email: "lazaarhamza@gmail.com",
   phone: "+212674145890",
   github: "https://github.com/hamza-lzr",
+  linkedin: "https://www.linkedin.com/in/hamza-lazaar-19330a329/",
   // --- UPDATED PROFILE SUMMARY ---
   profileSummary: [
     "As a final-year Software Engineering student, my passion extends beyond just code! I'm driven by the challenge of solving real-world problems. For me, full-stack development is the ultimate creative outlet.",
@@ -111,17 +114,18 @@ const projectsData: Project[] = [
     name: "RAM Access Management App (Internship)",
     description: "Full-stack application for managing employee badges, passes, and airport access for RAM and its subsidiaries (Admin Platform + Employee Platform).",
     technologies: ["Java Spring Boot", "React", "TypeScript", "Keycloak", "PostgreSQL"],
-    githubUrl: "https://github.com/hamza-lzr/badgesApp" 
+    githubUrl: "https://github.com/hamza-lzr/badgesApp", 
+    otherUrl: "https://github.com/hamza-lzr/badges-app-frontend"
   },
   {
     name: "Ralydev Client/Back-Office Platform (PFA)",
     description: "Full-stack web platform including a company website, client portal for requests, and back-office administration.",
     technologies: ["Java Spring Boot", "React", "TypeScript", "JWT", "PostgreSQL", "TailwindCSS"],
-    githubUrl: "https://github.com/hamza-lzr/" 
+    githubUrl: "https://github.com/hamza-lzr/ralydev_crud_frontend" 
   },
   {
     name: "Agile Management App",
-    description: "Java SpringBoot API that allows the management of Agile projects using SCRUM.",
+    description: "Java SpringBoot API that allows the management of Agile projects (Sprints, Backlogs and role-based Authentication) using SCRUM.",
     technologies: ["Java Spring", "Spring Boot", "Spring Security", "Swagger", "Mockito", "JUnit", "PostgreSQL", "JWT", "Git"],
     githubUrl: "https://github.com/hamza-lzr/Agile_Management_App" 
   },
@@ -203,6 +207,15 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
           >
             <Github size={24} />
           </a>
+          <a
+            href={personalInfo.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-300 hover:text-teal-300 transition-colors"
+            aria-label="LinkedIn Profile"
+          >
+            <Linkedin size={24} />
+          </a>
         </div>
         
         {/* Mobile Menu Button */}
@@ -247,6 +260,17 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
               >
                 <Github size={24} />
                 GitHub
+              </a>
+              <a
+
+                href={personalInfo.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-300 hover:text-teal-300 transition-colors text-lg"
+                aria-label="LinkedIn Profile"
+              >
+                <Linkedin size={24} />
+                LinkedIn
               </a>
             </div>
           </motion.div>
@@ -457,6 +481,15 @@ const Contact: React.FC = () => (
         >
           <Phone size={22} />
           {personalInfo.phone}
+        </a>
+        <a
+          href={personalInfo.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-teal-300 transition-colors bg-gray-800 px-6 py-3 rounded-lg shadow-lg"
+        >
+          <Linkedin size={22} />
+          LinkedIn
         </a>
       </div>
     </div>
