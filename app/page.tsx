@@ -1,6 +1,6 @@
 "use client"; 
 
-import React, { useState, PropsWithChildren } from 'react';
+import React, { useState, useEffect, PropsWithChildren } from 'react';
 // --- FRAMER MOTION ---
 // We've added framer-motion for animations
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,7 +21,8 @@ import {
   Code,
   Database,
   Cog,
-  BookOpen
+  BookOpen,
+  Download
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -199,6 +200,15 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
             </a>
           ))}
           <a
+            href="/Hamza_Lazaar_CV.pdf"
+            download
+            className="flex items-center gap-2 text-white font-medium bg-teal-600 px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+            aria-label="Download CV"
+          >
+            <Download size={20} />
+            My CV
+          </a>
+          <a
             href={personalInfo.github}
             target="_blank"
             rel="noopener noreferrer"
@@ -252,6 +262,16 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
                 </a>
               ))}
               <a
+                href="/Hamza_Lazaar_CV.pdf"
+                download
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 text-white font-medium text-lg bg-teal-600 px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+                aria-label="Download CV"
+              >
+                <Download size={24} />
+                Download CV
+              </a>
+              <a
                 href={personalInfo.github}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -262,7 +282,6 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
                 GitHub
               </a>
               <a
-
                 href={personalInfo.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -281,43 +300,82 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
 };
 
 // Hero Section
-const Hero: React.FC = () => (
-  <section id="home" className="min-h-screen w-full flex items-center justify-center text-center px-6 pt-24 pb-12 overflow-hidden">
-    <motion.div 
-      className="max-w-3xl"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
-    >
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4">
-        Hi, I am <span className="text-teal-300">{personalInfo.name}</span>
-      </h1>
-      <p className="text-xl md:text-2xl text-gray-300 mb-8">
-        {personalInfo.title}
-      </p>
-      <div className="flex justify-center gap-4">
-        <motion.a 
-          href="#projects" 
-          className="bg-teal-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg"
-          whileHover={{ y: -4, scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          View My Work
-        </motion.a>
-        <motion.a 
-          href="#contact" 
-          className="bg-gray-700 text-gray-100 font-semibold px-6 py-3 rounded-lg shadow-lg"
-          whileHover={{ y: -4, scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          Get in Touch
-        </motion.a>
-      </div>
-    </motion.div>
-  </section>
-);
+const Hero: React.FC = () => {
+  const roles = [
+    "Software Engineering Student @ ENSA Agadir",
+    "Fullstack Developer",
+    "Java Enthusiast",
+    "Seeking a PFE Internship"
+  ];
+  
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentRoleIndex((prevIndex) => (prevIndex + 1) % roles.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section id="home" className="min-h-screen w-full flex items-center justify-center text-center px-6 pt-24 pb-12 overflow-hidden">
+      <motion.div 
+        className="max-w-3xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
+      >
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4">
+          Hi, I am <span className="text-teal-300">{personalInfo.name}</span>
+        </h1>
+        <AnimatePresence mode="wait">
+          <motion.p 
+            key={currentRoleIndex}
+            className="text-xl md:text-2xl text-gray-300 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+          >
+            {roles[currentRoleIndex]}
+          </motion.p>
+        </AnimatePresence>
+        <div className="flex flex-wrap justify-center gap-4">
+          <motion.a 
+            href="/Hamza_Lazaar_CV.pdf"
+            download
+            className="bg-teal-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
+            whileHover={{ y: -4, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Download size={20} />
+            Download CV
+          </motion.a>
+          <motion.a 
+            href="#projects" 
+            className="bg-gray-700 text-gray-100 font-semibold px-6 py-3 rounded-lg shadow-lg"
+            whileHover={{ y: -4, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            View My Work
+          </motion.a>
+          <motion.a 
+            href="#contact" 
+            className="bg-gray-700 text-gray-100 font-semibold px-6 py-3 rounded-lg shadow-lg"
+            whileHover={{ y: -4, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            Get in Touch
+          </motion.a>
+        </div>
+      </motion.div>
+    </section>
+  );
+};
 
 // About Section
 const About: React.FC = () => (
