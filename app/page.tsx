@@ -304,7 +304,7 @@ const Hero: React.FC = () => {
   const roles = [
     "Software Engineering Student @ ENSA Agadir",
     "Fullstack Developer",
-    "Java Enthusiast ☕",
+    "Java Enthusiast ♨️",
     "Seeking a PFE Internship"
   ];
   
