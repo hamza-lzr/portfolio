@@ -638,7 +638,7 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
         isLightHeader ? "site-header--light text-[#181818]" : "site-header--dark text-white"
       }`}
     >
-      <nav className="site-header-glass mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 md:px-10 xl:px-14">
+      <nav className="site-header-glass mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3 md:px-10 md:py-4 xl:px-14 xl:py-5">
         <a href="#home" className={`nav-brand ${linkColor}`} aria-label="Go to top">
           {personalInfo.name}&apos;s portfolio
         </a>
