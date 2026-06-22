@@ -45,6 +45,11 @@ interface SkillCategory {
   skills: string[];
 }
 
+interface HeroStatement {
+  action: string;
+  object: string;
+}
+
 const personalInfo = {
   name: "Hamza Lazaar",
   title: "Software Engineer | Fullstack Web Developer",
@@ -67,6 +72,13 @@ const navLinks: NavLink[] = [
   { name: "Projects", href: "#projects" },
   { name: "Skills", href: "#skills" },
   { name: "Contact", href: "#contact" },
+];
+
+const heroStatements: HeroStatement[] = [
+  { action: "Building", object: "platforms" },
+  { action: "Designing", object: "systems" },
+  { action: "Shipping", object: "workflows" },
+  { action: "Crafting", object: "interfaces" },
 ];
 
 const experienceData: Experience[] = [
@@ -194,9 +206,10 @@ const createRevealTransition = (delay = 0, duration = 0.72) => ({
   ease: easeCinematic,
 });
 
-const createMaskedTextReveal = (distance: string, reducedMotion: boolean) => ({
-  hidden: { opacity: 0, y: reducedMotion ? "0%" : distance },
+const createMaskedTextCycle = (reducedMotion: boolean) => ({
+  hidden: { opacity: 0, y: reducedMotion ? "0%" : "112%" },
   visible: { opacity: 1, y: "0%" },
+  exit: { opacity: 0, y: reducedMotion ? "0%" : "-112%" },
 });
 
 const staggerContainer = {
@@ -616,17 +629,18 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const linkColor = isScrolled || isMenuOpen ? "text-[#181818]" : "text-white";
+  const isLightHeader = isScrolled || isMenuOpen;
+  const linkColor = isLightHeader ? "text-[#181818]" : "text-white";
 
   return (
     <header
-      className={`fixed left-0 right-0 top-0 z-50 transition-colors duration-200 ${
-        isScrolled || isMenuOpen ? "bg-white text-[#181818]" : "bg-transparent text-white"
+      className={`site-header fixed left-0 right-0 top-0 z-50 ${
+        isLightHeader ? "site-header--light text-[#181818]" : "site-header--dark text-white"
       }`}
     >
-      <nav className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 md:px-10 xl:px-14">
+      <nav className="site-header-glass mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 md:px-10 xl:px-14">
         <a href="#home" className={`nav-brand ${linkColor}`} aria-label="Go to top">
-          {personalInfo.name}
+          {personalInfo.name}&apos;s portfolio
         </a>
 
         <div className="hidden items-center gap-[15px] md:flex">
@@ -639,7 +653,7 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
             href="/HAMZA_LAZAAR_CV.pdf"
             download
             className={`pill-control nav-pill glass-control ${
-              isScrolled ? "glass-on-light text-[#181818]" : "glass-on-dark text-white"
+              isLightHeader ? "glass-on-light text-[#181818]" : "glass-on-dark text-white"
             }`}
           >
             <Download size={15} />
@@ -650,7 +664,7 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={`glass-control inline-flex h-10 w-10 items-center justify-center rounded-[75px] md:hidden ${
-            isScrolled || isMenuOpen ? "glass-on-light text-[#181818]" : "glass-on-dark text-white"
+            isLightHeader ? "glass-on-light text-[#181818]" : "glass-on-dark text-white"
           }`}
           aria-label="Toggle menu"
         >
@@ -661,7 +675,7 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="border-t border-[#181818]/15 bg-white px-6 pb-8 pt-2 text-[#181818] md:hidden"
+            className="mobile-menu-glass mx-auto mt-2 max-w-[1440px] px-6 pb-8 pt-6 text-[#181818] md:hidden"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -702,15 +716,29 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLElement>(null);
+  const [heroStatementIndex, setHeroStatementIndex] = useState(0);
   const reducedMotion = useReducedMotion();
   const heroItem = createFadeUp(18, Boolean(reducedMotion));
-  const heroLine = createMaskedTextReveal("112%", Boolean(reducedMotion));
+  const heroLine = createMaskedTextCycle(Boolean(reducedMotion));
+  const activeHeroStatement = heroStatements[heroStatementIndex];
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const sceneY = useTransform(scrollYProgress, [0, 1], [0, 86]);
   const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -72]);
   const planeY = useTransform(scrollYProgress, [0, 1], [0, 130]);
   const planeOpacity = useTransform(scrollYProgress, [0, 0.72], [0.42, 0]);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setHeroStatementIndex((currentIndex) => (currentIndex + 1) % heroStatements.length);
+    }, 5600);
+
+    return () => window.clearInterval(intervalId);
+  }, [reducedMotion]);
 
   return (
     <motion.section ref={heroRef} id="home" className="relative min-h-[92svh] overflow-hidden bg-black text-white">
@@ -734,28 +762,50 @@ const Hero: React.FC = () => {
         variants={heroSequence}
         style={reducedMotion ? undefined : { y: contentY }}
       >
-        <div className="grid gap-12 lg:grid-cols-[1fr_0.42fr] lg:items-end">
+        <div className="grid gap-12 lg:grid-cols-[0.78fr_0.64fr] lg:items-end xl:grid-cols-[0.74fr_0.68fr] xl:gap-16">
           <div>
             <motion.p className="eyebrow mb-8 text-white/72" variants={heroItem} transition={createRevealTransition(0, 0.72)}>
               {personalInfo.currentRole}
             </motion.p>
-            <motion.h1 className="hero-heading max-w-[9ch]" aria-label={personalInfo.name}>
-              <span className="block overflow-hidden pb-[0.08em]">
-                <motion.span className="block" variants={heroLine} transition={createRevealTransition(0.06, 1.08)}>
-                  Hamza
-                </motion.span>
+            <motion.h1
+              className="hero-heading max-w-[9ch]"
+              aria-label={`${activeHeroStatement.action} ${activeHeroStatement.object}`}
+            >
+              <span className="hero-line-mask">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={activeHeroStatement.action}
+                    className="hero-line-text"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={heroLine}
+                    transition={createRevealTransition(0.02, 1.08)}
+                  >
+                    {activeHeroStatement.action}
+                  </motion.span>
+                </AnimatePresence>
               </span>
-              <br />
-              <span className="-mt-[0.16em] block overflow-hidden pb-[0.08em]">
-                <motion.span className="block" variants={heroLine} transition={createRevealTransition(0.22, 1.08)}>
-                  Lazaar
-                </motion.span>
+              <span className="hero-line-mask">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={activeHeroStatement.object}
+                    className="hero-line-text"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={heroLine}
+                    transition={createRevealTransition(0.14, 1.08)}
+                  >
+                    {activeHeroStatement.object}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </motion.h1>
           </div>
 
           <motion.div
-            className="max-w-[430px] text-left lg:justify-self-end"
+            className="w-full max-w-[560px] text-left lg:justify-self-stretch xl:max-w-[620px]"
             variants={heroItem}
             transition={createRevealTransition(0.22, 0.84)}
           >
