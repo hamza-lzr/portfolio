@@ -93,8 +93,8 @@ const experienceData: Experience[] = [
   },
   {
     role: "Final-Year Project",
-    company: "Maaloumati migration project",
-    location: "ENSA Agadir",
+    company: "Maaloumati project - VOID Agency",
+    location: "Casablanca",
     dates: "PFE",
     description:
       "Migration-focused engineering project for modernizing Maaloumati, improving maintainability, data flow, and the reliability of the application architecture.",
