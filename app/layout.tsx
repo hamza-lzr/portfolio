@@ -1,15 +1,10 @@
 import React from "react";
-import { Poppins } from "next/font/google";
+import "@fontsource/raleway/400.css";
 import "./globals.css";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"], // Add the weights your design uses
-});
-
 export const metadata = {
-  title: "Hamza Lazaar - Portfolio",
-  description: "Software Engineering Student Portfolio",
+  title: "Hamza Lazaar - Software Engineer",
+  description: "Software Engineer and Fullstack Web Developer at VOID Agency.",
 };
 
 export default function RootLayout({
@@ -19,13 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      {/* Change the className here from Geist's variable to poppins.className
-        OLD was probably: <body className={GeistSans.className}>
-      */}
-      <body className={poppins.className}>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
-

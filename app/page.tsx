@@ -1,31 +1,22 @@
-"use client"; 
+"use client";
 
-import React, { useState, useEffect, PropsWithChildren } from 'react';
-// --- FRAMER MOTION ---
-// We've added framer-motion for animations
-import { motion, AnimatePresence } from 'framer-motion';
-
-// --- ICONS ---
+import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
+import type { BufferAttribute } from "three";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
-  LinkedinIcon as Linkedin,
-  Github,
-  Mail,
-  Phone,
-  Menu,
-  X,
   ArrowUpRight,
-  MapPin,
-  CalendarDays,
-  Briefcase,
-  GraduationCap,
-  Code,
-  Database,
-  Cog,
-  BookOpen,
-  Download
-} from 'lucide-react';
+  Braces,
+  Download,
+  Mail,
+  Menu,
+  MonitorSmartphone,
+  Phone,
+  ServerCog,
+  Terminal,
+  X,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-// --- TYPES ---
 interface NavLink {
   name: string;
   href: string;
@@ -44,8 +35,9 @@ interface Project {
   name: string;
   description: string;
   technologies: string[];
-  githubUrl: string;
+  githubUrl?: string;
   otherUrl?: string;
+  featured?: boolean;
 }
 
 interface SkillCategory {
@@ -53,21 +45,20 @@ interface SkillCategory {
   skills: string[];
 }
 
-// --- DATA FROM YOUR CV ---
-
 const personalInfo = {
   name: "Hamza Lazaar",
-  title: "Software Engineering Student @ ENSA Agadir",
+  title: "Software Engineer | Fullstack Web Developer",
+  currentRole: "Fullstack SWE at VOID Agency",
+  location: "Morocco",
   email: "lazaarhamza@gmail.com",
   phone: "+212674145890",
   github: "https://github.com/hamza-lzr",
   linkedin: "https://www.linkedin.com/in/hamza-lazaar-19330a329/",
-  // --- UPDATED PROFILE SUMMARY ---
   profileSummary: [
-    "As a final-year Software Engineering student, my passion extends beyond just code! I'm driven by the challenge of solving real-world problems. For me, full-stack development is the ultimate creative outlet.",
-    "It's the art of taking an idea from a simple concept to a fully-realized application, from crafting a robust Java Spring Boot backend to building a dynamic, user-friendly React frontend.",
-    "I'm now seeking my final-year internship (PFE) to tackle new challenges, contribute to a team that builds scalable, impactful solutions, learn in a dynamic environment, and continue my growth as an aspiring engineer."
-  ]
+    "Software engineer and fullstack web developer building reliable web platforms across backend services, frontend interfaces, authentication, and data-driven workflows.",
+    "My work sits between product clarity and implementation discipline: Java Spring Boot APIs, React and Next.js interfaces, Oracle and PostgreSQL data models, and delivery habits shaped by real client and internship projects.",
+    "I am currently working as a Fullstack SWE at VOID Agency while completing my PFE, with a focus on maintainable systems, clean user experiences, and production-ready engineering.",
+  ],
 };
 
 const navLinks: NavLink[] = [
@@ -80,217 +71,627 @@ const navLinks: NavLink[] = [
 
 const experienceData: Experience[] = [
   {
-    role: "Internship - Full-Stack Developer",
+    role: "Fullstack SWE",
+    company: "VOID Agency",
+    location: "Morocco",
+    dates: "Current",
+    description:
+      "Building full-stack web experiences for agency clients, combining polished interfaces with maintainable backend logic and practical delivery workflows.",
+    technologies: ["React", "Next.js", "TypeScript", "Java Spring Boot", "PostgreSQL", "Git"],
+  },
+  {
+    role: "Final-Year Project",
+    company: "Maaloumati migration project",
+    location: "ENSA Agadir",
+    dates: "PFE",
+    description:
+      "Migration-focused engineering project for modernizing Maaloumati, improving maintainability, data flow, and the reliability of the application architecture.",
+    technologies: ["Migration", "Java Spring Boot", "React", "TypeScript", "REST APIs", "Oracle DB"],
+  },
+  {
+    role: "Full-Stack Developer Intern",
     company: "Royal Air Maroc",
     location: "Casablanca",
     dates: "Jul 2025 - Aug 2025",
-    description: "Design and development of a full-stack application for managing employee badges, passes, and airport access for RAM and its subsidiaries (Admin Platform + Employee Platform).",
-    technologies: ["Java Spring Boot", "React", "TypeScript", "Bootstrap", "Keycloak", "PostgreSQL", "Git/GitHub"]
+    description:
+      "Designed and developed a full-stack application for managing employee badges, passes, and airport access for RAM and its subsidiaries.",
+    technologies: ["Java Spring Boot", "React", "TypeScript", "Bootstrap", "Keycloak", "PostgreSQL"],
   },
   {
-    role: "4th Year Internship (PFA) - Full-Stack Developer",
+    role: "PFA Full-Stack Developer",
     company: "Ralydev Technology",
     location: "Agadir",
     dates: "Feb 2025 - May 2025",
-    description: "Design and development of a full-stack web application including a company presentation website, a client platform for login and request submission, and a back-office administration platform.",
-    technologies: ["Java Spring Boot", "React", "TypeScript", "JWT", "PostgreSQL", "TailwindCSS", "Git/GitHub"]
-  }
+    description:
+      "Built a company website, client request portal, and back-office administration platform for a full-stack business workflow.",
+    technologies: ["Java Spring Boot", "React", "TypeScript", "JWT", "PostgreSQL", "TailwindCSS"],
+  },
 ];
 
 const educationData = [
   {
-    degree: "Software Engineering Major",
+    degree: "Software Engineering",
     institution: "ENSA Agadir",
-    dates: "Current"
+    dates: "Final year",
   },
   {
-    degree: "High School Degree in Mathematical Sciences B",
+    degree: "Mathematical Sciences B",
     institution: "Ennour-2 High School, Casablanca",
-    dates: ""
-  }
+    dates: "High school degree",
+  },
 ];
 
 const projectsData: Project[] = [
   {
-    name: "RAM Access Management App (Internship)",
-    description: "Full-stack application for managing employee badges, passes, and airport access for RAM and its subsidiaries (Admin Platform + Employee Platform).",
-    technologies: ["Java Spring Boot", "React", "TypeScript", "Keycloak", "PostgreSQL"],
-    githubUrl: "https://github.com/hamza-lzr/badgesApp", 
-    otherUrl: "https://github.com/hamza-lzr/badges-app-frontend"
+    name: "Maaloumati Migration Project",
+    description:
+      "PFE project focused on migrating Maaloumati toward a cleaner, more maintainable full-stack architecture with stronger data flow and delivery readiness.",
+    technologies: ["Migration", "Java Spring Boot", "React", "TypeScript", "Oracle DB"],
+    featured: true,
   },
   {
-    name: "Ralydev Client/Back-Office Platform (PFA)",
-    description: "Full-stack web platform including a company website, client portal for requests, and back-office administration.",
-    technologies: ["Java Spring Boot", "React", "TypeScript", "JWT", "PostgreSQL", "TailwindCSS"],
-    githubUrl: "https://github.com/hamza-lzr/ralydev_crud_frontend" 
+    name: "RAM Access Management App",
+    description:
+      "Full-stack platform for employee badges, passes, and airport access management across RAM and subsidiary workflows.",
+    technologies: ["Java Spring Boot", "React", "TypeScript", "Keycloak", "PostgreSQL"],
+    githubUrl: "https://github.com/hamza-lzr/badgesApp",
+    otherUrl: "https://github.com/hamza-lzr/badges-app-frontend",
+  },
+  {
+    name: "Ralydev Client Platform",
+    description:
+      "Company website, client portal, and back-office administration system for request intake and operational follow-up.",
+    technologies: ["Java Spring Boot", "React", "TypeScript", "JWT", "PostgreSQL"],
+    githubUrl: "https://github.com/hamza-lzr/ralydev_crud_frontend",
   },
   {
     name: "Agile Management App",
-    description: "Java SpringBoot API that allows the management of Agile projects (Sprints, Backlogs and role-based Authentication) using SCRUM.",
-    technologies: ["Java Spring", "Spring Boot", "Spring Security", "Swagger", "Mockito", "JUnit", "PostgreSQL", "JWT", "Git"],
-    githubUrl: "https://github.com/hamza-lzr/Agile_Management_App" 
+    description:
+      "Spring Boot API for managing Scrum projects, sprints, backlogs, role-based authentication, and API documentation.",
+    technologies: ["Java Spring", "Spring Security", "Swagger", "JUnit", "PostgreSQL"],
+    githubUrl: "https://github.com/hamza-lzr/Agile_Management_App",
   },
 ];
 
 const skillsData: SkillCategory[] = [
   {
-    category: "Programming Languages",
-    skills: ["Java", "J2EE", "C/C++", "C#", "JavaScript", "TypeScript", "HTML/CSS"]
+    category: "Languages",
+    skills: ["Java", "J2EE", "PHP", "JavaScript", "TypeScript", "HTML/CSS"],
   },
   {
-    category: "Frameworks & Libraries",
-    skills: [ "Java Spring Boot", "React", ".NET", "TailwindCSS"]
+    category: "Frontend",
+    skills: ["React", "Next.js", "TailwindCSS", "Responsive UI", "Framer Motion"],
   },
   {
-    category: "Databases",
-    skills: ["SQL", "PL/SQL", "PostgreSQL", "Oracle DB", "MySQL"]
+    category: "Backend",
+    skills: ["Java Spring Boot", "PHP", "Drupal", "REST APIs", "JWT", "Keycloak"],
   },
   {
-    category: "Tools & Concepts",
-    skills: ["Git", "Swagger", "Postman", "JWT", "Keycloak", "Agile (Scrum)"]
-  }
+    category: "Data & Tools",
+    skills: ["PostgreSQL", "Oracle DB", "MySQL", "Git", "Swagger", "Postman", "Linux", "Docker", "Scrum"],
+  },
 ];
 
-// --- REUSABLE COMPONENTS ---
+const stackIconMap: Record<string, LucideIcon> = {
+  Languages: Braces,
+  Frontend: MonitorSmartphone,
+  Backend: ServerCog,
+  "Data & Tools": Terminal,
+};
 
-// Section Wrapper - Now with Framer Motion!
-const Section: React.FC<PropsWithChildren<{ id: string, title: string, className?: string }>> = ({ id, title, children, className = "" }) => (
-  <motion.section 
-    id={id} 
-    className={`w-full max-w-5xl mx-auto py-16 md:py-24 px-6 ${className}`}
-    initial={{ opacity: 0, y: 50 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.7, ease: "easeInOut" }}
-    viewport={{ once: true }}
+const easeCinematic = [0.22, 0.78, 0.26, 1] as const;
+const easeIn = [0.4, 0, 1, 1] as const;
+const easeEmphasized = [0.2, 0, 0, 1] as const;
+
+const createFadeUp = (distance: number, reducedMotion: boolean) => ({
+  hidden: { opacity: 0, y: reducedMotion ? 0 : distance },
+  visible: { opacity: 1, y: 0 },
+});
+
+const createRevealTransition = (delay = 0, duration = 0.72) => ({
+  delay,
+  duration,
+  ease: easeCinematic,
+});
+
+const createMaskedTextReveal = (distance: string, reducedMotion: boolean) => ({
+  hidden: { opacity: 0, y: reducedMotion ? "0%" : distance },
+  visible: { opacity: 1, y: "0%" },
+});
+
+const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.09,
+    },
+  },
+};
+
+const heroSequence = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.18,
+      staggerChildren: 0.16,
+    },
+  },
+};
+
+const createMobileMenuVariants = (reducedMotion: boolean) =>
+  reducedMotion
+    ? {
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: { duration: 0.36, ease: easeCinematic, when: "beforeChildren", staggerChildren: 0.08 },
+        },
+        exit: { opacity: 0, transition: { duration: 0.28, ease: easeIn } },
+      }
+    : {
+        hidden: { opacity: 0, clipPath: "inset(0 0 100% 0)" },
+        visible: {
+          opacity: 1,
+          clipPath: "inset(0 0 0% 0)",
+          transition: { duration: 0.58, ease: easeEmphasized, when: "beforeChildren", staggerChildren: 0.08 },
+        },
+        exit: {
+          opacity: 0,
+          clipPath: "inset(0 0 100% 0)",
+          transition: { duration: 0.34, ease: easeIn },
+        },
+      };
+
+const scrollRevealViewport = {
+  once: true,
+  amount: 0.24,
+  margin: "0px 0px -96px 0px",
+} as const;
+
+const ScrollReveal: React.FC<
+  PropsWithChildren<{
+    className?: string;
+    delay?: number;
+    distance?: number;
+    duration?: number;
+  }>
+> = ({ children, className, delay = 0, distance = 18, duration = 0.72 }) => {
+  const reducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={scrollRevealViewport}
+      variants={createFadeUp(distance, Boolean(reducedMotion))}
+      transition={createRevealTransition(delay, duration)}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const handleDepthPointerMove = (event: React.PointerEvent<HTMLElement>) => {
+  if (event.pointerType === "touch" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const target = event.currentTarget;
+  const rect = target.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / rect.width - 0.5;
+  const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+  target.style.setProperty("--tilt-x", `${(-y * 5.5).toFixed(2)}deg`);
+  target.style.setProperty("--tilt-y", `${(x * 7).toFixed(2)}deg`);
+  target.style.setProperty("--depth-x", `${(x * 18).toFixed(2)}px`);
+  target.style.setProperty("--depth-y", `${(y * 18).toFixed(2)}px`);
+};
+
+const resetDepthPointer = (event: React.PointerEvent<HTMLElement>) => {
+  event.currentTarget.style.setProperty("--tilt-x", "0deg");
+  event.currentTarget.style.setProperty("--tilt-y", "0deg");
+  event.currentTarget.style.setProperty("--depth-x", "0px");
+  event.currentTarget.style.setProperty("--depth-y", "0px");
+};
+
+const OrganicHeroScene: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let frameId = 0;
+    let disposed = false;
+    let isVisible = true;
+    let hasPresentedFrame = false;
+    let normalFrame = 0;
+    let cleanupScene: (() => void) | undefined;
+
+    const initScene = async () => {
+      const THREE = await import("three");
+
+      if (disposed || !canvasRef.current) {
+        return;
+      }
+
+      const canvas = canvasRef.current;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const pointer = { x: 0, y: 0 };
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: false,
+        powerPreference: "high-performance",
+      });
+
+      renderer.setClearColor(0x000000, 1);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x000000, 0.05);
+
+      const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+      camera.position.set(0, 0.15, 8.6);
+
+      const group = new THREE.Group();
+      scene.add(group);
+
+      const geometry = new THREE.SphereGeometry(2.35, 88, 44);
+      const position = geometry.getAttribute("position") as BufferAttribute;
+      const basePositions = new Float32Array(position.array as ArrayLike<number>);
+
+      const material = new THREE.MeshPhysicalMaterial({
+        color: 0x10241d,
+        roughness: 0.34,
+        metalness: 0.58,
+        clearcoat: 0.64,
+        clearcoatRoughness: 0.22,
+        emissive: 0x04110c,
+        emissiveIntensity: 0.72,
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.rotation.set(-0.18, 0.34, -0.08);
+      group.add(mesh);
+
+      const shellGeometry = new THREE.IcosahedronGeometry(2.95, 3);
+      const shellMaterial = new THREE.MeshBasicMaterial({
+        color: 0xa0e0ab,
+        transparent: true,
+        opacity: 0.08,
+        wireframe: true,
+        depthWrite: false,
+      });
+      const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+      shell.rotation.set(0.22, -0.4, 0.18);
+      group.add(shell);
+
+      const ribbonGeometry = new THREE.TorusKnotGeometry(1.58, 0.24, 220, 30);
+      const ribbonMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x2a120c,
+        roughness: 0.3,
+        metalness: 0.68,
+        clearcoat: 0.6,
+        clearcoatRoughness: 0.2,
+        emissive: 0x120503,
+        emissiveIntensity: 0.46,
+      });
+      const ribbon = new THREE.Mesh(ribbonGeometry, ribbonMaterial);
+      ribbon.rotation.set(0.8, -0.2, 0.48);
+      ribbon.scale.setScalar(1.18);
+      group.add(ribbon);
+
+      const particleCount = 118;
+      const particleGeometry = new THREE.BufferGeometry();
+      const particlePositions = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount; i += 1) {
+        const angle = i * 2.399963229728653;
+        const layer = (i % 17) / 16;
+        const radius = 3.05 + (i % 9) * 0.055;
+        const z = (layer - 0.5) * 4.8;
+        const orbitalRadius = Math.sqrt(Math.max(radius * radius - z * z * 0.18, 0.2));
+
+        particlePositions[i * 3] = Math.cos(angle) * orbitalRadius;
+        particlePositions[i * 3 + 1] = Math.sin(angle) * orbitalRadius * 0.72;
+        particlePositions[i * 3 + 2] = z;
+      }
+
+      particleGeometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+      const particleMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.32,
+        size: 0.026,
+        depthWrite: false,
+      });
+      const particles = new THREE.Points(particleGeometry, particleMaterial);
+      particles.rotation.set(0.18, 0, -0.08);
+      group.add(particles);
+
+      const rim = new THREE.PointLight(0xffa52e, 62, 16);
+      rim.position.set(3.8, 2.4, 3.1);
+      scene.add(rim);
+
+      const green = new THREE.PointLight(0x7fd99b, 46, 14);
+      green.position.set(-3.8, -1.2, 4.2);
+      scene.add(green);
+
+      const oxblood = new THREE.PointLight(0x9b2b1e, 34, 13);
+      oxblood.position.set(1.2, -3.2, 3.8);
+      scene.add(oxblood);
+
+      const fill = new THREE.AmbientLight(0x16201c, 1.3);
+      scene.add(fill);
+
+      const resize = () => {
+        const parent = canvas.parentElement;
+        const width = parent?.clientWidth || window.innerWidth;
+        const height = parent?.clientHeight || window.innerHeight;
+
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.position.z = width < 720 ? 8.9 : 7.8;
+        group.position.x = width < 900 ? 0 : 0.7;
+        group.scale.setScalar(width < 720 ? 0.96 : 1.05);
+        camera.updateProjectionMatrix();
+      };
+
+      const onPointerMove = (event: PointerEvent) => {
+        if (reducedMotion) {
+          return;
+        }
+
+        pointer.x = event.clientX / window.innerWidth - 0.5;
+        pointer.y = event.clientY / window.innerHeight - 0.5;
+      };
+
+      const render = (time = 0) => {
+        frameId = 0;
+        const t = reducedMotion ? 2.4 : time * 0.001;
+
+        for (let i = 0; i < position.count; i += 1) {
+          const index = i * 3;
+          const x = basePositions[index];
+          const y = basePositions[index + 1];
+          const z = basePositions[index + 2];
+          const wave =
+            1 +
+            Math.sin(x * 1.55 + t * 0.72) * 0.105 +
+            Math.sin(y * 2.15 + z * 0.8 + t * 0.48) * 0.075 +
+            Math.cos((x - y + z) * 2.65 + t * 0.38) * 0.045;
+
+          position.setXYZ(i, x * wave, y * wave, z * wave);
+        }
+
+        position.needsUpdate = true;
+        if (normalFrame % 4 === 0) {
+          geometry.computeVertexNormals();
+        }
+        normalFrame += 1;
+
+        mesh.rotation.y = 0.34 + Math.sin(t * 0.16) * 0.08 + t * 0.045;
+        mesh.rotation.x = -0.18 + Math.cos(t * 0.12) * 0.06;
+        mesh.position.z = Math.sin(t * 0.22) * 0.08;
+        shell.rotation.x = 0.22 + Math.sin(t * 0.14) * 0.08;
+        shell.rotation.y = -0.4 - t * 0.026;
+        shell.rotation.z = 0.18 + Math.cos(t * 0.16) * 0.05;
+        ribbon.rotation.y = -0.2 - t * 0.068;
+        ribbon.rotation.x = 0.8 + Math.sin(t * 0.2) * 0.07;
+        ribbon.rotation.z = 0.48 + t * 0.035;
+        ribbon.position.z = 0.1 + Math.cos(t * 0.18) * 0.12;
+        particles.rotation.y = t * 0.018;
+        particles.rotation.x = 0.18 + Math.sin(t * 0.11) * 0.035;
+        group.rotation.y = pointer.x * 0.16;
+        group.rotation.x = pointer.y * -0.08;
+        group.rotation.z = Math.sin(t * 0.18) * 0.045;
+
+        renderer.render(scene, camera);
+
+        if (!hasPresentedFrame) {
+          hasPresentedFrame = true;
+          window.requestAnimationFrame(() => {
+            if (!disposed) {
+              setIsReady(true);
+            }
+          });
+        }
+
+        if (!reducedMotion && !disposed && isVisible) {
+          frameId = window.requestAnimationFrame(render);
+        }
+      };
+
+      resize();
+      window.addEventListener("resize", resize);
+      window.addEventListener("pointermove", onPointerMove);
+      const observer =
+        typeof IntersectionObserver === "undefined"
+          ? undefined
+          : new IntersectionObserver(
+              ([entry]) => {
+                isVisible = Boolean(entry?.isIntersecting);
+
+                if (!isVisible && frameId) {
+                  window.cancelAnimationFrame(frameId);
+                  frameId = 0;
+                }
+
+                if (isVisible && !reducedMotion && !frameId && !disposed) {
+                  frameId = window.requestAnimationFrame(render);
+                }
+              },
+              { threshold: 0.08 },
+            );
+
+      observer?.observe(canvas.parentElement ?? canvas);
+      render(0);
+
+      cleanupScene = () => {
+        window.removeEventListener("resize", resize);
+        window.removeEventListener("pointermove", onPointerMove);
+        observer?.disconnect();
+        window.cancelAnimationFrame(frameId);
+        geometry.dispose();
+        material.dispose();
+        shellGeometry.dispose();
+        shellMaterial.dispose();
+        ribbonGeometry.dispose();
+        ribbonMaterial.dispose();
+        particleGeometry.dispose();
+        particleMaterial.dispose();
+        renderer.dispose();
+      };
+    };
+
+    void initScene();
+
+    return () => {
+      disposed = true;
+      window.cancelAnimationFrame(frameId);
+      cleanupScene?.();
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`absolute inset-0 h-full w-full transition-opacity duration-[900ms] ease-out ${
+        isReady ? "opacity-100" : "opacity-0"
+      }`}
+      aria-hidden="true"
+    />
+  );
+};
+
+const Section: React.FC<PropsWithChildren<{ id: string; label: string; title: string; dark?: boolean }>> = ({
+  id,
+  label,
+  title,
+  dark = false,
+  children,
+}) => {
+  return (
+    <section
+      id={id}
+      className={`w-full ${dark ? "bg-black text-white" : "bg-white text-[#181818]"}`}
+    >
+      <div className="section-shell section-grid">
+        <ScrollReveal distance={16} duration={0.78}>
+          <p className={`eyebrow mb-6 ${dark ? "text-white/60" : "text-[#6d6d6d]"}`}>{label}</p>
+          <h2 className="display-heading max-w-[620px]">{title}</h2>
+        </ScrollReveal>
+        <ScrollReveal delay={0.12} distance={20}>
+          {children}
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+};
+
+const TechPill: React.FC<{ tech: string; dark?: boolean }> = ({ tech, dark = false }) => (
+  <span
+    className={`tech-pill glass-control ${
+      dark ? "glass-on-dark text-white" : "glass-on-light text-[#181818]"
+    }`}
   >
-    <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-teal-300">
-      {title}
-    </h2>
-    {children}
-  </motion.section>
-);
-
-// Tech Pill Component
-const TechPill: React.FC<{ tech: string }> = ({ tech }) => (
-  <span className="inline-block bg-gray-700 text-teal-200 rounded-full px-4 py-1.5 text-xs md:text-sm font-medium">
     {tech}
   </span>
 );
 
-// --- PAGE SECTIONS ---
+const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) => void }> = ({
+  isMenuOpen,
+  setIsMenuOpen,
+}) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const reducedMotion = useReducedMotion();
 
-// Header / Navigation
-const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) => void }> = ({ isMenuOpen, setIsMenuOpen }) => {
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 32);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const linkColor = isScrolled || isMenuOpen ? "text-[#181818]" : "text-white";
+
   return (
-    <header className="fixed top-0 left-0 right-0 w-full bg-gray-900/80 backdrop-blur-md z-50 border-b border-gray-700">
-      <nav className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="#" className="text-2xl font-bold text-white hover:text-teal-300 transition-colors">
+    <header
+      className={`fixed left-0 right-0 top-0 z-50 transition-colors duration-200 ${
+        isScrolled || isMenuOpen ? "bg-white text-[#181818]" : "bg-transparent text-white"
+      }`}
+    >
+      <nav className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 md:px-10 xl:px-14">
+        <a href="#home" className={`nav-brand ${linkColor}`} aria-label="Go to top">
           {personalInfo.name}
         </a>
-        
-        {/* Desktop Nav */}
-        <div className="hidden md:flex space-x-6 items-center">
+
+        <div className="hidden items-center gap-[15px] md:flex">
           {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="text-gray-300 hover:text-teal-300 transition-colors font-medium"
-            >
+            <a key={link.name} href={link.href} className={`nav-link ${linkColor}`}>
               {link.name}
             </a>
           ))}
           <a
-            href="/Hamza_Lazaar_CV.pdf"
+            href="/HAMZA_LAZAAR_CV.pdf"
             download
-            className="flex items-center gap-2 text-white font-medium bg-teal-600 px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
-            aria-label="Download CV"
+            className={`pill-control nav-pill glass-control ${
+              isScrolled ? "glass-on-light text-[#181818]" : "glass-on-dark text-white"
+            }`}
           >
-            <Download size={20} />
-            My CV
-          </a>
-          <a
-            href={personalInfo.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-300 hover:text-teal-300 transition-colors"
-            aria-label="GitHub Profile"
-          >
-            <Github size={24} />
-          </a>
-          <a
-            href={personalInfo.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-300 hover:text-teal-300 transition-colors"
-            aria-label="LinkedIn Profile"
-          >
-            <Linkedin size={24} />
+            <Download size={15} />
+            CV
           </a>
         </div>
-        
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-gray-300 hover:text-teal-300"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
+
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className={`glass-control inline-flex h-10 w-10 items-center justify-center rounded-[75px] md:hidden ${
+            isScrolled || isMenuOpen ? "glass-on-light text-[#181818]" : "glass-on-dark text-white"
+          }`}
+          aria-label="Toggle menu"
+        >
+          {isMenuOpen ? <X size={19} /> : <Menu size={19} />}
+        </button>
       </nav>
-      
-      {/* Mobile Menu Dropdown - Now with Animation! */}
+
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div 
-            className="md:hidden absolute top-full left-0 w-full bg-gray-900 border-t border-gray-700 shadow-lg"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+          <motion.div
+            className="border-t border-[#181818]/15 bg-white px-6 pb-8 pt-2 text-[#181818] md:hidden"
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={createMobileMenuVariants(Boolean(reducedMotion))}
+            style={{ transformOrigin: "top" }}
           >
-            <div className="flex flex-col space-y-4 p-6">
+            <div className="flex flex-col gap-5">
               {navLinks.map((link) => (
-                <a
+                <motion.a
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-gray-300 hover:text-teal-300 transition-colors font-medium text-lg"
+                  className="text-[30px] font-light leading-[1.25]"
+                  variants={createFadeUp(10, Boolean(reducedMotion))}
+                  transition={createRevealTransition(0, 0.48)}
                 >
                   {link.name}
-                </a>
+                </motion.a>
               ))}
-              <a
-                href="/Hamza_Lazaar_CV.pdf"
+              <motion.a
+                href="/HAMZA_LAZAAR_CV.pdf"
                 download
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-2 text-white font-medium text-lg bg-teal-600 px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
-                aria-label="Download CV"
+                className="pill-control glass-control glass-solid-dark mt-2 w-fit text-white"
+                variants={createFadeUp(10, Boolean(reducedMotion))}
+                transition={createRevealTransition(0, 0.48)}
               >
-                <Download size={24} />
+                <Download size={17} />
                 Download CV
-              </a>
-              <a
-                href={personalInfo.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-300 hover:text-teal-300 transition-colors text-lg"
-                aria-label="GitHub Profile"
-              >
-                <Github size={24} />
-                GitHub
-              </a>
-              <a
-                href={personalInfo.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-300 hover:text-teal-300 transition-colors text-lg"
-                aria-label="LinkedIn Profile"
-              >
-                <Linkedin size={24} />
-                LinkedIn
-              </a>
+              </motion.a>
             </div>
           </motion.div>
         )}
@@ -299,324 +700,387 @@ const Header: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (isOpen: boolean) =
   );
 };
 
-// Hero Section
 const Hero: React.FC = () => {
-  const roles = [
-    "Software Engineering Student @ ENSA Agadir",
-    "Fullstack Developer",
-    "Java Enthusiast ♨️",
-    "Seeking a PFE Internship"
-  ];
-  
-  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentRoleIndex((prevIndex) => (prevIndex + 1) % roles.length);
-    }, 5000); // Change every 5 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+  const heroRef = useRef<HTMLElement>(null);
+  const reducedMotion = useReducedMotion();
+  const heroItem = createFadeUp(18, Boolean(reducedMotion));
+  const heroLine = createMaskedTextReveal("112%", Boolean(reducedMotion));
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const sceneY = useTransform(scrollYProgress, [0, 1], [0, 86]);
+  const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -72]);
+  const planeY = useTransform(scrollYProgress, [0, 1], [0, 130]);
+  const planeOpacity = useTransform(scrollYProgress, [0, 0.72], [0.42, 0]);
 
   return (
-    <section id="home" className="min-h-screen w-full flex items-center justify-center text-center px-6 pt-24 pb-12 overflow-hidden">
-      <motion.div 
-        className="max-w-3xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
+    <motion.section ref={heroRef} id="home" className="relative min-h-[92svh] overflow-hidden bg-black text-white">
+      <motion.div
+        className="absolute inset-0"
+        style={reducedMotion ? undefined : { y: sceneY, scale: sceneScale }}
       >
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4">
-          Hi, I am <span className="text-teal-300">{personalInfo.name}</span>
-        </h1>
-        <AnimatePresence mode="wait">
-          <motion.p 
-            key={currentRoleIndex}
-            className="text-xl md:text-2xl text-gray-300 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
+        <OrganicHeroScene />
+      </motion.div>
+      <motion.div
+        className="hero-depth-plane"
+        aria-hidden="true"
+        style={reducedMotion ? undefined : { y: planeY, opacity: planeOpacity }}
+      />
+      <div className="absolute inset-0 bg-black/32" aria-hidden="true" />
+
+      <motion.div
+        className="relative z-10 mx-auto flex min-h-[92svh] max-w-[1440px] flex-col justify-center px-6 pb-16 pt-24 md:px-10 xl:px-14"
+        initial="hidden"
+        animate="visible"
+        variants={heroSequence}
+        style={reducedMotion ? undefined : { y: contentY }}
+      >
+        <div className="grid gap-12 lg:grid-cols-[1fr_0.42fr] lg:items-end">
+          <div>
+            <motion.p className="eyebrow mb-8 text-white/72" variants={heroItem} transition={createRevealTransition(0, 0.72)}>
+              {personalInfo.currentRole}
+            </motion.p>
+            <motion.h1 className="hero-heading max-w-[9ch]" aria-label={personalInfo.name}>
+              <span className="block overflow-hidden pb-[0.08em]">
+                <motion.span className="block" variants={heroLine} transition={createRevealTransition(0.06, 1.08)}>
+                  Hamza
+                </motion.span>
+              </span>
+              <br />
+              <span className="-mt-[0.16em] block overflow-hidden pb-[0.08em]">
+                <motion.span className="block" variants={heroLine} transition={createRevealTransition(0.22, 1.08)}>
+                  Lazaar
+                </motion.span>
+              </span>
+            </motion.h1>
+          </div>
+
+          <motion.div
+            className="max-w-[430px] text-left lg:justify-self-end"
+            variants={heroItem}
+            transition={createRevealTransition(0.22, 0.84)}
           >
-            {roles[currentRoleIndex]}
-          </motion.p>
-        </AnimatePresence>
-        <div className="flex flex-wrap justify-center gap-4">
-          <motion.a 
-            href="/Hamza_Lazaar_CV.pdf"
-            download
-            className="bg-teal-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
-            whileHover={{ y: -4, scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <Download size={20} />
-            Download CV
-          </motion.a>
-          <motion.a 
-            href="#projects" 
-            className="bg-gray-700 text-gray-100 font-semibold px-6 py-3 rounded-lg shadow-lg"
-            whileHover={{ y: -4, scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            View My Work
-          </motion.a>
-          <motion.a 
-            href="#contact" 
-            className="bg-gray-700 text-gray-100 font-semibold px-6 py-3 rounded-lg shadow-lg"
-            whileHover={{ y: -4, scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            Get in Touch
-          </motion.a>
+            <p className="text-[30px] font-light leading-[1.25] text-white md:text-[39px] md:leading-[1.19]">
+              {personalInfo.title}
+            </p>
+            <p className="body-lg mt-6 text-white/78">
+              Building Java Spring Boot APIs, React and Next.js interfaces, PHP and Drupal features, and
+              Oracle-backed workflows.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#projects" className="pill-control glass-control glass-solid-light text-[#181818]">
+                View Work
+              </a>
+              <a href={`mailto:${personalInfo.email}`} className="pill-control glass-control glass-on-dark text-white">
+                <Mail size={16} />
+                Contact
+              </a>
+            </div>
+          </motion.div>
         </div>
       </motion.div>
-    </section>
+
+    </motion.section>
   );
 };
 
-// About Section
-const About: React.FC = () => (
-  <Section id="about" title="About Me">
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-      <div className="lg:col-span-2 space-y-6 text-gray-300 text-lg leading-relaxed">
-        {/* Updated profile summary paragraphs */}
-        {personalInfo.profileSummary.map((paragraph, index) => (
-          <p key={index}>{paragraph}</p>
-        ))}
-      </div>
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-          <GraduationCap className="text-teal-300" />
-          Education
-        </h3>
-        <ul className="space-y-5">
-          {educationData.map((edu, index) => (
-            <li key={index}>
-              <h4 className="font-semibold text-white text-lg">{edu.degree}</h4>
-              <p className="text-gray-400">{edu.institution}</p>
-              {edu.dates && <p className="text-gray-500 text-sm">{edu.dates}</p>}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  </Section>
-);
-
-// Experience Section
-const Experience: React.FC = () => (
-  <Section id="experience" title="Professional Experience">
-    <div className="relative space-y-12">
-      {/* Timeline Line */}
-      <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gray-700" />
-      
-      {experienceData.map((job, index) => (
-        <div key={index} className="relative flex md:justify-center">
-          {/* Timeline Dot */}
-          <div className="absolute left-4 md:left-1/2 top-2 -translate-x-1/2 w-4 h-4 bg-teal-400 rounded-full border-4 border-gray-900" />
-          
-          <div className={`w-full md:w-1/2 p-6 rounded-lg shadow-xl bg-gray-800 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12 md:self-end'}`}>
-            <h3 className="text-2xl font-bold text-white">{job.role}</h3>
-            <h4 className="text-lg font-semibold text-teal-300 mb-2">{job.company}</h4>
-            <div className={`flex items-center gap-4 text-gray-400 mb-4 md:justify-start`}>
-              <div className="flex items-center gap-2">
-                <MapPin size={16} />
-                <span>{job.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CalendarDays size={16} />
-                <span>{job.dates}</span>
-              </div>
-            </div>
-            <p className="text-gray-300 mb-5">{job.description}</p>
-            <div className={`flex flex-wrap gap-2 md:justify-start`}>
-              {job.technologies.map((tech) => (
-                <TechPill key={tech} tech={tech} />
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </Section>
-);
-
-// Projects Section
-const Projects: React.FC = () => (
-  <Section id="projects" title="Projects">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {projectsData.map((project, index) => (
-        <motion.a 
-          key={index}
-          href={project.githubUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col group" // Removed transition classes
-          whileHover={{ y: -8, scale: 1.03 }} // Added framer-motion hover
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          <div className="flex-grow">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-white">{project.name}</h3>
-              <ArrowUpRight className="text-gray-500 group-hover:text-teal-300 transition-colors" size={20} />
-            </div>
-            <p className="text-gray-300 mb-6">{project.description}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {project.technologies.map((tech) => (
-              <TechPill key={tech} tech={tech} />
-            ))}
-          </div>
-        </motion.a>
-      ))}
-    </div>
-  </Section>
-);
-
-// Skills Section
-const Skills: React.FC = () => {
-  const iconMap: { [key: string]: React.ReactNode } = {
-    "Programming Languages": <Code className="text-teal-300" />,
-    "Frameworks & Libraries": <Briefcase className="text-teal-300" />,
-    "Databases": <Database className="text-teal-300" />,
-    "Tools & Concepts": <Cog className="text-teal-300" />,
-  };
+const About: React.FC = () => {
+  const reducedMotion = useReducedMotion();
+  const itemVariant = createFadeUp(10, Boolean(reducedMotion));
 
   return (
-    <Section id="skills" title="My Skills">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {skillsData.map((category) => (
-          <div key={category.category} className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              {iconMap[category.category] || <BookOpen className="text-teal-300" />}
-              {category.category}
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              {category.skills.map((skill) => (
-                 <span key={skill} className="bg-gray-900 text-gray-200 rounded-lg px-5 py-2.5 text-sm font-medium shadow-md">
-                   {skill}
-                 </span>
-              ))}
+    <Section id="about" label="Profile" title="Full-stack work with a systems mindset.">
+      <div className="grid gap-12 lg:grid-cols-[1.16fr_0.84fr]">
+        <motion.div className="space-y-6 text-[18px] leading-[1.58] text-[#181818]" variants={staggerContainer}>
+          {personalInfo.profileSummary.map((paragraph) => (
+            <motion.p key={paragraph} variants={itemVariant} transition={createRevealTransition(0, 0.64)}>
+              {paragraph}
+            </motion.p>
+          ))}
+        </motion.div>
+        <motion.div variants={createFadeUp(12, Boolean(reducedMotion))} transition={createRevealTransition(0.08, 0.68)}>
+          <p className="eyebrow mb-6 text-[#6d6d6d]">Education</p>
+          <motion.div className="border-t border-[#181818]/18" variants={staggerContainer}>
+            {educationData.map((edu) => (
+              <motion.div
+                key={edu.degree}
+                className="border-b border-[#181818]/18 py-8 md:py-9"
+                variants={itemVariant}
+                transition={createRevealTransition(0, 0.64)}
+              >
+                <h3 className="text-[30px] font-light leading-[1.25]">{edu.degree}</h3>
+                <p className="mt-2 text-[#6d6d6d]">{edu.institution}</p>
+                <p className="micro-label mt-1 text-[#6d6d6d]">{edu.dates}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </div>
+    </Section>
+  );
+};
+
+const Experience: React.FC = () => {
+  const reducedMotion = useReducedMotion();
+  const rowVariant = createFadeUp(14, Boolean(reducedMotion));
+
+  return (
+    <Section id="experience" label="Experience" title="Client platforms, migrations, and full-stack delivery." dark>
+      <div className="experience-list depth-stage border-t border-white/20">
+        {experienceData.map((job, index) => (
+          <motion.article
+            key={`${job.company}-${job.role}`}
+            className="experience-row grid gap-8 border-b border-white/20 py-10 md:grid-cols-[0.82fr_1.18fr] md:py-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={scrollRevealViewport}
+            variants={rowVariant}
+            transition={createRevealTransition(Math.min(index, 3) * 0.09, 0.76)}
+          >
+            <div>
+              <p className="eyebrow text-white/55">{job.dates}</p>
+              <h3 className="mt-4 text-[30px] font-light leading-[1.25] md:text-[45px] md:leading-[1.22]">
+                {job.role}
+              </h3>
+              <p className="mt-3 text-[16px] leading-[1.39] text-white/70">
+                {job.company} / {job.location}
+              </p>
             </div>
-          </div>
+            <div>
+              <p className="body-lg max-w-[65ch] text-white/82">{job.description}</p>
+              <div className="mt-7 flex flex-wrap gap-2">
+                {job.technologies.map((tech) => (
+                  <TechPill key={tech} tech={tech} dark />
+                ))}
+              </div>
+            </div>
+          </motion.article>
         ))}
       </div>
     </Section>
   );
 };
 
-// Contact Section
-const Contact: React.FC = () => (
-  <Section id="contact" title="Get in Touch">
-    <div className="text-center max-w-xl mx-auto">
-      <p className="text-lg text-gray-300 mb-8">
-        I am currently seeking a final-year internship (PFE) and am open to new opportunities.
-        Feel free to reach out!
-      </p>
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
-        <a 
-          href={`mailto:${personalInfo.email}`}
-          className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-teal-300 transition-colors bg-gray-800 px-6 py-3 rounded-lg shadow-lg"
-        >
-          <Mail size={22} />
-          {personalInfo.email}
-        </a>
-        <a 
-          href={personalInfo.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-teal-300 transition-colors bg-gray-800 px-6 py-3 rounded-lg shadow-lg"
-        >
-          <Github size={22} />
-          GitHub
-        </a>
-        <a 
-          href={`tel:${personalInfo.phone}`}
-          className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-teal-300 transition-colors bg-gray-800 px-6 py-3 rounded-lg shadow-lg"
-        >
-          <Phone size={22} />
-          {personalInfo.phone}
-        </a>
-        <a
-          href={personalInfo.linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-teal-300 transition-colors bg-gray-800 px-6 py-3 rounded-lg shadow-lg"
-        >
-          <Linkedin size={22} />
-          LinkedIn
-        </a>
-      </div>
-    </div>
-  </Section>
-);
+const Projects: React.FC = () => {
+  const reducedMotion = useReducedMotion();
+  const itemVariant = createFadeUp(16, Boolean(reducedMotion));
 
-// Footer
+  return (
+    <Section id="projects" label="Selected Work" title="Projects shaped around real workflows.">
+      <div className="depth-stage grid gap-px bg-[#181818] md:grid-cols-2 xl:grid-cols-3">
+        {projectsData.map((project, index) => {
+          const href = project.githubUrl || project.otherUrl;
+          const content = (
+            <>
+              <div className="flex items-start justify-between gap-6">
+                <div className="min-w-0">
+                  <p className="eyebrow mb-5 text-white/55">
+                    {project.featured ? "Featured PFE" : `Project 0${index}`}
+                  </p>
+                  <h3
+                    className={`text-[30px] font-light leading-[1.25] text-balance text-white ${
+                      project.featured ? "md:text-[45px] md:leading-[1.22]" : "md:text-[36px] md:leading-[1.16]"
+                    }`}
+                  >
+                    {project.name}
+                  </h3>
+                </div>
+                {href && <ArrowUpRight className="project-card-arrow mt-2 shrink-0 text-white" size={22} />}
+              </div>
+              <p className="body-lg mt-8 max-w-[54ch] text-white/78">{project.description}</p>
+              <div className="mt-8 flex flex-wrap gap-2">
+                {project.technologies.map((tech) => (
+                  <TechPill key={tech} tech={tech} dark />
+                ))}
+              </div>
+            </>
+          );
+
+          const className = `project-card depth-card editorial-cell group flex min-h-[380px] flex-col justify-between bg-black text-white ${
+            project.featured ? "xl:col-span-2" : ""
+          }`;
+
+          return href ? (
+            <motion.a
+              key={project.name}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={className}
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={itemVariant}
+              transition={createRevealTransition(Math.min(index, 2) * 0.1, 0.76)}
+              onPointerMove={handleDepthPointerMove}
+              onPointerLeave={resetDepthPointer}
+              onPointerCancel={resetDepthPointer}
+            >
+              <div className="depth-card-inner flex min-h-full flex-1 flex-col justify-between">{content}</div>
+            </motion.a>
+          ) : (
+            <motion.article
+              key={project.name}
+              className={className}
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={itemVariant}
+              transition={createRevealTransition(Math.min(index, 2) * 0.1, 0.76)}
+              onPointerMove={handleDepthPointerMove}
+              onPointerLeave={resetDepthPointer}
+              onPointerCancel={resetDepthPointer}
+            >
+              <div className="depth-card-inner flex min-h-full flex-1 flex-col justify-between">{content}</div>
+            </motion.article>
+          );
+        })}
+      </div>
+    </Section>
+  );
+};
+
+const Skills: React.FC = () => {
+  const reducedMotion = useReducedMotion();
+  const itemVariant = createFadeUp(14, Boolean(reducedMotion));
+
+  return (
+    <Section id="skills" label="Stack" title="Tools I use to ship full-stack products." dark>
+      <div className="depth-stage grid gap-px bg-white/20 md:grid-cols-2">
+        {skillsData.map((category, index) => {
+          const StackIcon = stackIconMap[category.category] ?? Terminal;
+
+          return (
+            <motion.article
+              key={category.category}
+              className="depth-card editorial-cell bg-black"
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={itemVariant}
+              transition={createRevealTransition(Math.min(index, 2) * 0.1, 0.76)}
+              onPointerMove={handleDepthPointerMove}
+              onPointerLeave={resetDepthPointer}
+              onPointerCancel={resetDepthPointer}
+            >
+              <div className="depth-card-inner">
+                <div className="mb-8 flex items-center gap-4">
+                  <StackIcon aria-hidden="true" size={22} strokeWidth={1.7} />
+                  <h3 className="text-[30px] font-light leading-[1.25]">{category.category}</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {category.skills.map((skill) => (
+                    <TechPill key={skill} tech={skill} dark />
+                  ))}
+                </div>
+              </div>
+            </motion.article>
+          );
+        })}
+      </div>
+    </Section>
+  );
+};
+
+const Contact: React.FC = () => {
+  const reducedMotion = useReducedMotion();
+  const linkVariant = createFadeUp(8, Boolean(reducedMotion));
+
+  return (
+    <section id="contact" className="bg-white text-[#181818]">
+      <div className="section-shell">
+        <div className="grid gap-12 md:grid-cols-[1fr_0.8fr]">
+          <ScrollReveal distance={16} duration={0.78}>
+            <p className="eyebrow mb-6 text-[#6d6d6d]">Contact</p>
+            <h2 className="max-w-4xl text-[54px] font-light leading-[1.1] text-balance md:text-[94px]">
+              Let us build something precise.
+            </h2>
+          </ScrollReveal>
+          <div className="flex flex-col justify-end">
+            <motion.a
+              href={`mailto:${personalInfo.email}`}
+              className="editorial-link border-t border-[#181818]/25 text-[#181818]"
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={linkVariant}
+              transition={createRevealTransition(0, 0.62)}
+            >
+              <span>{personalInfo.email}</span>
+              <Mail className="shrink-0" size={20} />
+            </motion.a>
+            <motion.a
+              href={`tel:${personalInfo.phone}`}
+              className="editorial-link border-t border-[#181818]/25 text-[#181818]"
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={linkVariant}
+              transition={createRevealTransition(0.08, 0.62)}
+            >
+              <span>{personalInfo.phone}</span>
+              <Phone className="shrink-0" size={20} />
+            </motion.a>
+            <motion.a
+              href={personalInfo.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="editorial-link border-t border-[#181818]/25 text-[#181818]"
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={linkVariant}
+              transition={createRevealTransition(0.16, 0.62)}
+            >
+              <span>GitHub</span>
+              <ArrowUpRight className="shrink-0" size={20} />
+            </motion.a>
+            <motion.a
+              href={personalInfo.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="editorial-link border-y border-[#181818]/25 text-[#181818]"
+              initial="hidden"
+              whileInView="visible"
+              viewport={scrollRevealViewport}
+              variants={linkVariant}
+              transition={createRevealTransition(0.24, 0.62)}
+            >
+              <span>LinkedIn</span>
+              <ArrowUpRight className="shrink-0" size={20} />
+            </motion.a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const Footer: React.FC = () => (
-  <footer className="w-full py-10 border-t border-gray-700">
-    <div className="max-w-7xl mx-auto px-6 text-center text-gray-500">
-      <p>&copy; {new Date().getFullYear()} {personalInfo.name}. All rights reserved.</p>
+  <footer className="bg-black px-6 py-8 text-white md:px-10 xl:px-14">
+    <div className="micro-label mx-auto flex max-w-[1440px] flex-col gap-3 text-white/60 md:flex-row md:items-center md:justify-between">
+      <p>{personalInfo.name}</p>
+      <p>{new Date().getFullYear()} / {personalInfo.title}</p>
     </div>
   </footer>
 );
-
-
-// --- MAIN APP COMPONENT ---
 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <>
-      {/* Global Styles */}
-      <style>{`
-        /* --- ADDED POPPINS FONT IMPORT --- */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-        
-        html {
-          scroll-behavior: smooth;
-        }
-        body {
-          background-color: #111827; /* bg-gray-900 */
-          color: #d1d5db; /* text-gray-300 */
-          /* --- UPDATED FONT --- */
-          font-family: 'Poppins', sans-serif;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #1f2937; /* bg-gray-800 */
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #0d9488; /* bg-teal-600 */
-          border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: #0f766e; /* bg-teal-700 */
-        }
-      `}</style>
-      
-      <div className="flex flex-col min-h-screen">
-        <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-        <main className="flex-grow pt-20">
-          <Hero />
-          <About />
-          <Experience />
-          <Projects />
-          <Skills />
-          <Contact />
-        </main>
-        <Footer />
-      </div>
-    </>
+    <div className="min-h-screen bg-white">
+      <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <main>
+        <Hero />
+        <About />
+        <Experience />
+        <Projects />
+        <Skills />
+        <Contact />
+      </main>
+      <Footer />
+    </div>
   );
 };
 
-// Next.js App Router requires the default export from page.tsx to be the component itself
 export default App;
-
